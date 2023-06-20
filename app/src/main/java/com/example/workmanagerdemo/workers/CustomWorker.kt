@@ -1,15 +1,14 @@
-package com.example.workmanagerdemo
+package com.example.workmanagerdemo.workers
 
 import android.content.Context
 import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
-import androidx.work.Worker
 import androidx.work.WorkerParameters
+import com.example.workmanagerdemo.DemoApi
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import dagger.hilt.android.HiltAndroidApp
 import java.net.UnknownHostException
 
 @HiltWorker

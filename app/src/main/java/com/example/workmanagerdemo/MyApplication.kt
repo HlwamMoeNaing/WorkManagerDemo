@@ -7,6 +7,7 @@ import androidx.work.Configuration
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
+import com.example.workmanagerdemo.workers.CustomWorker
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
