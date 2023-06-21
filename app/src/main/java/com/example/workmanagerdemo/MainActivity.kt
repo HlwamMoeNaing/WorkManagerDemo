@@ -25,8 +25,6 @@ import java.time.Duration
 @OptIn(ExperimentalPermissionsApi::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @SuppressLint("PermissionLaunchedDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -48,25 +46,30 @@ class MainActivity : ComponentActivity() {
 
 
 
+        // This is Expedited Work
         setContent {
             WorkManagerDemoTheme() {
                 val permission =
                     rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
 
-
-                if(permission.status.isGranted){
-                    val workRequest = OneTimeWorkRequestBuilder<CustomExpeditedWorker>()
-                        .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST) // IF we run as EXPEDITED, need to delete delay time
-                        //.setInitialDelay(Duration.ofSeconds(10))
-                        .setBackoffCriteria(
-                            backoffPolicy = BackoffPolicy.LINEAR,
-                            duration = Duration.ofSeconds(15)
-                        )
-                        .build()
-                    WorkManager.getInstance(applicationContext).enqueue(workRequest)
-                }else{
-                    permission.launchPermissionRequest()
+                LaunchedEffect(key1 = Unit){
+                    if(permission.status.isGranted){
+                        val workRequest = OneTimeWorkRequestBuilder<CustomExpeditedWorker>()
+                            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST) // IF we run as EXPEDITED, need to delete delay time
+                            //.setInitialDelay(Duration.ofSeconds(10))
+                            .setBackoffCriteria(
+                                backoffPolicy = BackoffPolicy.LINEAR,
+                                duration = Duration.ofSeconds(15)
+                            )
+                            .build()
+                        WorkManager.getInstance(applicationContext).enqueue(workRequest)
+                    }else{
+                        permission.launchPermissionRequest()
+                    }
                 }
+
+
+
 
             }
         }

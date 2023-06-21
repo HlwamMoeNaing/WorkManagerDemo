@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -21,11 +22,13 @@ class CustomExpeditedWorker constructor(
     workerParameters: WorkerParameters
 ) : CoroutineWorker(context, workerParameters) {
 
+    // This is for Expedited WorkManager
     val channelId = "m_channel_id"
     override suspend fun doWork(): Result {
         try {
-            setForeground(createForegroundNotification(applicationContext,channelId,1))
+            setForeground(getForegroundInf(applicationContext)) // This is to get foreground notification for higher version above android 12
         } catch (e: Exception) {
+            Log.d("MCustomWorker", "Fail")
             return Result.failure()
         }
         delay(20000)
@@ -34,32 +37,46 @@ class CustomExpeditedWorker constructor(
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
-
-        return createForegroundNotification(applicationContext, channelId, 1)
+        return getForegroundInf(applicationContext)
     }
 
+    private fun getForegroundInf(context: Context): ForegroundInfo {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(
+                1,
+                createNotification(context = context),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE
+            )
+        } else {
+            ForegroundInfo(
+                1,
+                createNotification(context)
+            )
+        }
+    }
 
-//    private fun createNotification(context: Context): Notification {
-//        val channelId = "main_channel_id"
-//        val channelName = "Main Channel"
-//        val builder = NotificationCompat.Builder(context, channelId)
-//            .setSmallIcon(R.drawable.ic_launcher_background)
-//            .setContentTitle("Notification Title")
-//            .setContentText("This is my first notification")
-//            .setOngoing(true)
-//            .setAutoCancel(true)
-//
-//        val notificationManager =
-//            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            val channel = NotificationChannel(
-//                channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT
-//            )
-//            notificationManager.createNotificationChannel(channel)
-//        }
-//
-//        return builder.build()
-//    }
+    private fun createNotification(context: Context): Notification {
+        val channelId = "main_channel_id"
+        val channelName = "Main Channel"
+        val builder = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setContentTitle("Notification Title")
+            .setContentText("This is my first notification")
+            .setOngoing(true)
+            .setAutoCancel(true)
+
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+
+        return builder.build()
+    }
 
 
     fun createForegroundNotification(
